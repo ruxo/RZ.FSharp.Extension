@@ -6,8 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="KeyValuePair.fs" />
     <Compile Include="Seq.fs" />
     <Compile Include="Map.fs" />
+    <Compile Include="FileInfo.fs" />
+    <Compile Include="DriveInfo.fs" />
   </ItemGroup>
 
   <ItemGroup>
