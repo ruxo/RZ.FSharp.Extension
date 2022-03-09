@@ -140,42 +140,42 @@ let orElseWithAsync (f: unit -> OptionAsync<'A>) (x: OptionAsync<'A>) :OptionAsy
         | None -> return! f()
     }
 
-let safeCall a fun' = async {
+let safeCall fun' a = async {
     try
         let! v = fun' a in return Some v
     with
     | _ -> return None
 }
 
-let safeCall2 a b fun' = async {
+let safeCall2 fun' a b = async {
     try
         let! v = (fun' a b) in return Some v
     with
     | _ -> return None
 }
 
-let safeCall3 a b c fun' = async {
+let safeCall3 fun' a b c = async {
     try
         let! v = (fun' a b c) in return Some v
     with
     | _ -> return None
 }
 
-let safeCall4 a b c d fun' = async {
+let safeCall4 fun' a b c d = async {
     try
         let! v = (fun' a b c d) in return Some v
     with
     | _ -> return None
 }
 
-let safeCall5 a b c d e fun' = async {
+let safeCall5 fun' a b c d e = async {
     try
         let! v = (fun' a b c d e) in return Some v
     with
     | _ -> return None
 }
 
-let safeCall6 a b c d e f fun' = async {
+let safeCall6 fun' a b c d e f = async {
     try
         let! v = (fun' a b c d e f) in return Some v
     with
