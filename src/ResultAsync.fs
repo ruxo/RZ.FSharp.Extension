@@ -69,49 +69,49 @@ let inline orElse elseValue = get Ok (constant elseValue)
 let inline orElseAsync elseFunc = getAsync ok elseFunc
 
 let inline safeCall ([<InlineIfLambda>] eHandler) fun' a = async {
-    let! f = fun'
     try
-        return Ok (f a)
+        let! v = fun' a
+        return Ok v
     with
     | e -> return Error (eHandler e)
 }
 
 let inline safeCall2 ([<InlineIfLambda>] eHandler) fun' a b = async {
-    let! f = fun'
     try
-        return Ok (f a b)
+        let! v = fun' a b
+        return Ok v
     with
     | e -> return Error (eHandler e)
 }
 
 let inline safeCall3 ([<InlineIfLambda>] eHandler) fun' a b c = async {
-    let! f = fun'
     try
-        return Ok (f a b c)
+        let! v = fun' a b c
+        return Ok v
     with
     | e -> return Error (eHandler e)
 }
 
 let inline safeCall4 ([<InlineIfLambda>] eHandler) fun' a b c d = async {
-    let! f = fun'
     try
-        return Ok (f a b c d)
+        let! v = fun' a b c d
+        return Ok v
     with
     | e -> return Error (eHandler e)
 }
 
 let inline safeCall5 ([<InlineIfLambda>] eHandler) fun' a b c d e = async {
-    let! f = fun'
     try
-        return Ok (f a b c d e)
+        let! v = fun' a b c d e
+        return Ok v
     with
     | e -> return Error (eHandler e)
 }
 
 let inline safeCall6 ([<InlineIfLambda>] eHandler) fun' a b c d e f = async {
-    let! f' = fun'
     try
-        return Ok (f' a b c d e f)
+        let! v = fun' a b c d e f
+        return Ok v
     with
     | e -> return Error (eHandler e)
 }
