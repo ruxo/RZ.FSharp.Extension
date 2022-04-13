@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Compile Include="Prelude.fs" />
-    <Compile Include="CommonDefs.fs" />
     <Compile Include="KeyValuePair.fs" />
     <Compile Include="Seq.fs" />
     <Compile Include="Map.fs" />

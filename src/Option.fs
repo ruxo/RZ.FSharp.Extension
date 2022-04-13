@@ -1,5 +1,7 @@
 ﻿module RZ.FSharp.Extension.Option
 
+open Prelude
+
 // Functor Application
 let inline ap other = function
 | None -> None
@@ -79,13 +81,47 @@ let inline safeCall6 fun' a b c d e f =
     with
     | _ -> None
 
-let inline mapAsync ([<InlineIfLambda>] f: 'A -> Async<'B>) = function
+let mapAsync (f: 'A -> Async<'B>) = function
 | Some x -> async { let! r = f x in return Some r }
 | None -> Async.return' None
 
 let inline bindAsync ([<InlineIfLambda>] f: 'A -> OptionAsync<'B>) = function
 | Some x -> f x
 | None -> Async.return' None
+
+let filterAsync (f :'A -> Async<bool>) = function
+| Some x -> async { let! r = f x in return if r then Some x else None }
+| None -> Async.return' None
+
+let inline defaultValueAsync (v :Async<'A>) = function
+| Some x -> Async.return' x
+| None -> v
+
+let inline defaultWithAsync ([<InlineIfLambda>] f :unit -> Async<'A>) = function
+| Some x -> Async.return' x
+| None -> f()
+
+let getOrFailAsync (messenger :unit -> Async<string>) = function
+| Some x -> Async.return' x
+| None -> async { let! r = messenger() in return failwith r }
+
+let getOrRaiseAsync (raiser :unit -> Async<exn>) = function
+| Some x -> Async.return' x
+| None -> async { let! r = raiser() in return raise r }
+
+let inline iterAsync ([<InlineIfLambda>] f :'T -> Async<unit>) = function
+| Some x -> f x
+| None -> Async.return' ()
+
+let inline orElseAsync (if_none :Async<'T option>) x =
+    match x with
+    | Some _ -> Async.return' x
+    | None -> if_none
+
+let inline orElseWithAsync ([<InlineIfLambda>] f :unit -> Async<'T option>) x =
+    match x with
+    | Some _ -> Async.return' x
+    | None -> f()
 
 open System.Threading.Tasks
 
@@ -96,3 +132,37 @@ let inline mapTask ([<InlineIfLambda>] f: 'a -> Task<'b>) = function
 let inline bindTask ([<InlineIfLambda>] f: 'a -> Task<'b option>) = function
 | Some x -> f x
 | None -> Task.FromResult None
+
+let filterT (f :'A -> Task<bool>) = function
+| Some x -> task { let! r = f x in return if r then Some x else None }
+| None -> Task.FromResult None
+
+let inline defaultValueT (v :Task<'A>) = function
+| Some x -> Task.FromResult x
+| None -> v
+
+let inline defaultWithT ([<InlineIfLambda>] f :unit -> Task<'A>) = function
+| Some x -> Task.FromResult x
+| None -> f()
+
+let getOrFailT (messenger :unit -> Task<string>) = function
+| Some x -> Task.FromResult x
+| None -> task { let! r = messenger() in return failwith r }
+
+let getOrRaiseT (raiser :unit -> Task<exn>) = function
+| Some x -> Task.FromResult x
+| None -> task { let! r = raiser() in return raise r }
+
+let inline iterT ([<InlineIfLambda>] f :'T -> Task<unit>) = function
+| Some x -> f x
+| None -> Task.FromResult ()
+
+let inline orElseT (if_none :Task<'T option>) x =
+    match x with
+    | Some _ -> Task.FromResult x
+    | None -> if_none
+
+let inline orElseWithT ([<InlineIfLambda>] f :unit -> Task<'T option>) x =
+    match x with
+    | Some _ -> Task.FromResult x
+    | None -> f()

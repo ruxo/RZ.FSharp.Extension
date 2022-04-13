@@ -1,5 +1,7 @@
 ﻿module RZ.FSharp.Extension.OptionAsync
 
+open Prelude
+
 let none() = Async.return' None
 
 let map (f: 'A -> 'B) (x: OptionAsync<'A>) :OptionAsync<'B> = async {

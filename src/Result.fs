@@ -107,7 +107,7 @@ let inline safeCall6 ([<InlineIfLambda>] eHandler) fun' a b c d e f =
     with
     | e -> Error (eHandler e)
 
-let inline then' ([<InlineIfLambda>] right: 'a -> unit) ([<InlineIfLambda>] wrong: 'b -> unit) = function
+let inline then' ([<InlineIfLambda>] right) ([<InlineIfLambda>] wrong) = function
 | Ok v -> right v
 | Error e -> wrong e
 
@@ -129,6 +129,44 @@ let inline bindAsync ([<InlineIfLambda>] f: 'a -> ResultAsync<'c,'b>)  = functio
 | Ok x -> f x
 | Error y -> async { return Error y }
 
+let filterAsync predicate error x =
+    match x with
+    | Ok v -> async { let! r = predicate v
+                      in if r then return Ok v
+                               else let! ev = error v in return Error ev }
+    | Error _ -> Async.return' x
+
+let inline defaultValueAsync def = function
+    | Ok v -> Async.return' v
+    | Error _ -> def
+
+let inline defaultWithAsync ([<InlineIfLambda>] def) = function
+    | Ok v -> Async.return' v
+    | Error e -> def e
+
+let getOrFailAsync (messenger :'b -> Async<string>) = function
+    | Ok v -> Async.return' v
+    | Error e -> async { let! r = messenger e in return failwith r }
+
+let getOrRaiseAsync (raiser :'b -> Async<exn>) = function
+    | Ok v -> Async.return' v
+    | Error e -> async { let! r = raiser e in return raise r }
+
+let inline iterAsync ([<InlineIfLambda>] right) x =
+    match x with
+    | Ok v -> right v
+    | Error _ -> Async.return' ()
+
+let inline orElseAsync if_error x =
+    match x with
+    | Ok _ -> Async.return' x
+    | Error _ -> if_error
+
+let inline orElseWithAsync ([<InlineIfLambda>] if_error) x =
+    match x with
+    | Ok _ -> Async.return' x
+    | Error e -> if_error e
+
 open System.Threading.Tasks
 
 let inline mapTask ([<InlineIfLambda>] f: 'a -> Task<'c>) ([<InlineIfLambda>] fwrong: 'b -> 'd) = function
@@ -138,6 +176,44 @@ let inline mapTask ([<InlineIfLambda>] f: 'a -> Task<'c>) ([<InlineIfLambda>] fw
 let inline bindTask ([<InlineIfLambda>] f: 'a -> Task<Result<'c,'d>>) ([<InlineIfLambda>] fwrong: 'b -> 'd) = function
 | Ok x -> f x
 | Error y -> Task.FromResult <| Error (fwrong y)
+
+let filterT predicate error x =
+    match x with
+    | Ok v -> task { let! r = predicate v
+                      in if r then return Ok v
+                               else let! ev = error v in return Error ev }
+    | Error _ -> Task.FromResult x
+
+let inline defaultValueT def = function
+    | Ok v -> Task.FromResult v
+    | Error _ -> def
+
+let inline defaultWithT ([<InlineIfLambda>] def) = function
+    | Ok v -> Task.FromResult v
+    | Error e -> def e
+
+let getOrFailT (messenger :'b -> Async<string>) = function
+    | Ok v -> Task.FromResult v
+    | Error e -> task { let! r = messenger e in return failwith r }
+
+let getOrRaiseT (raiser :'b -> Async<exn>) = function
+    | Ok v -> Task.FromResult v
+    | Error e -> task { let! r = raiser e in return raise r }
+
+let inline iterT ([<InlineIfLambda>] right) x =
+    match x with
+    | Ok v -> right v
+    | Error _ -> Task.FromResult ()
+
+let inline orElseT if_error x =
+    match x with
+    | Ok _ -> Task.FromResult x
+    | Error _ -> if_error
+
+let inline orElseWithT ([<InlineIfLambda>] if_error) x =
+    match x with
+    | Ok _ -> Task.FromResult x
+    | Error e -> if_error e
 
 // build result builder!
 type ResultBuilder() =

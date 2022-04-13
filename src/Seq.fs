@@ -3,10 +3,16 @@
 open System.Collections.Generic
 open System.Linq
 
-let inline createComparer<'T> comparer hash_func =
-    { new IEqualityComparer<'T> with
-        member _.Equals(x,y) = comparer x y
-        member _.GetHashCode x = hash_func x }
+module Iterator =
+  let fold reducer (init:'b) (itor:IEnumerator<'a>) =
+    use _ = itor
+    if itor.MoveNext() then
+      let mutable v = init
+      while itor.MoveNext() do
+        v <- reducer v itor.Current
+      v
+    else
+      init
 
 let inline except3 (comparer: IEqualityComparer<'T>) (another: 'T seq) (source: 'T seq) =
     source.Except(another, comparer)
