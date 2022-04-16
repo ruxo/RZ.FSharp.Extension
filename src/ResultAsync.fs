@@ -47,8 +47,16 @@ let inline defaultValueAsync dv = getAsync Async.return' dv
 let inline defaultWith f = get id f
 let inline defaultWithAsync f = getAsync Async.return' f
 
-let inline getRight ([<InlineIfLambda>] wrong) = get id wrong
-let inline getRightAsync ([<InlineIfLambda>] wrong) = getAsync Async.return' wrong
+let getOk x = async {
+    match! x with
+    | Ok v -> return v
+    | Error _ -> return failwith "Result is error but tried to get Ok!"
+}
+let getError x = async {
+    match! x with
+    | Ok _ -> return failwith "Result is ok but tried to get error!"
+    | Error e -> return e
+}
 
 let inline bindBoth right wrong x :ResultAsync<'c,'d> = get right wrong x
 let inline bindBothAsync right wrong x :ResultAsync<'c,'d> = getAsync right wrong x

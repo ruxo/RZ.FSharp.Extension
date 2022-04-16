@@ -38,7 +38,14 @@ let inline get ([<InlineIfLambda>] right) ([<InlineIfLambda>] wrong) x =
     | Ok y -> right y
     | Error e -> wrong e
 
-let inline getRight ([<InlineIfLambda>] wrong) = get id wrong
+let inline getOk x =
+    match x with
+    | Ok v -> v
+    | Error _ -> failwith "Result is error but tried to get Ok!"
+let inline getError x =
+    match x with
+    | Ok _ -> failwith "Result is ok but tried to get error!"
+    | Error e -> e
 
 let inline getOrFail messenger = function
 | Ok v -> v
