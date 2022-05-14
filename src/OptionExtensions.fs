@@ -1,6 +1,7 @@
 ﻿namespace RZ.FSharp.Extension
 
 open System.Runtime.CompilerServices
+
 [<Extension>]
 type OptionExtension =
   [<Extension>] static member inline ap(x: Option<'a -> 'b>, other) = x |> Option.ap other
