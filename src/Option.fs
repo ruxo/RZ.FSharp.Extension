@@ -174,6 +174,7 @@ type OptionBuilder() =
         | None -> None
         
     member _.Return x = Some x
+    member _.ReturnFrom x = x
     
     member _.Zero() = None
     

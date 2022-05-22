@@ -25,3 +25,12 @@ let ``Binding some None value should return None`` () =
         return f x y z
     }
     Assert.Equal(None, r)
+    
+[<Fact>]
+let ``Return some value directly`` () =
+    let v = Some 123
+    
+    let r = option {
+        return! v
+    }
+    Assert.Equal(v, r)

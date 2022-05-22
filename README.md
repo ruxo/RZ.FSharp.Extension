@@ -76,6 +76,29 @@ open RZ.FSharp.Extensions.Option
 | `safeCall`(2-6) | `(a → b) → a → b option`               | Call a function and trap exceptions as `None`. |
 | `then'`         | `(a → b) → (unit → b) → a option → b`  | Perform action for all possible branches.      |
 
+### Simple option workflow
+
+Consider
+
+```f#
+let myDiv x y = if y == 0 then None else Some (x / y)
+let getInput() = Some 5
+let input = getInput()
+let result = input |> Option.bind (myDiv 100) |> Option.map ((+) 1) // (100 / 5) + 1
+printfn $"%d{result}"
+```
+
+When it is written in `option` workflow:
+
+```f#
+let result = option {
+    let! input = getInput()
+    let! div = myDiv 100 input
+    return (div + 1)
+}
+printfn $"%d{result}"
+```
+
 ### Lifting to Async
 
 ### Lifting to Task
