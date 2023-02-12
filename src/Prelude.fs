@@ -1,4 +1,5 @@
-﻿module RZ.FSharp.Extension.Prelude
+﻿[<AutoOpen>]
+module RZ.FSharp.Extension.Prelude
 
 open System
 open System.Collections.Generic
@@ -15,6 +16,15 @@ let inline createComparer<'T> comparer hash_func =
 
 type OptionAsync<'T> = Async<'T option>
 type ResultAsync<'T,'E> = Async<Result<'T,'E>>
+
+/// Invalid state caused by incorrectly unlifting a monad
+exception UnwrapError of exn
+
+type UnwrapError with
+    static member from(message, ?data: obj) =
+        let e = exn message
+        data |> Option.iter (fun d -> e.Data["value"] <- d)
+        UnwrapError e
 
 module Async =
     let return' v = async { return v }

@@ -1,7 +1,5 @@
 ﻿module RZ.FSharp.Extension.Option
 
-open Prelude
-
 // Functor Application
 let inline ap other = function
 | None -> None

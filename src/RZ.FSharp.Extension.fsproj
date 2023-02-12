@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
@@ -13,16 +13,18 @@
     <Compile Include="Map.fs" />
     <Compile Include="Option.fs" />
     <Compile Include="OptionAsync.fs" />
-    <Compile Include="OptionExtensions.fs" />
+    <Compile Include="OptionExtension.fs" />
     <Compile Include="Result.fs" />
     <Compile Include="ResultAsync.fs" />
+    <Compile Include="ResultExtension.fs" />
+    <Compile Include="IO.fs" />
     <Compile Include="FileInfo.fs" />
     <Compile Include="DriveInfo.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="6.0.3" />
-    <PackageReference Include="MinVer" Version="2.5.0">
+    <PackageReference Update="FSharp.Core" Version="7.0.0" />
+    <PackageReference Include="MinVer" Version="4.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
