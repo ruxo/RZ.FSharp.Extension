@@ -2,8 +2,8 @@
 
 open Prelude
 
-let ok v :ResultAsync<'a,'b> = Async.return' (Ok v)
-let error v :ResultAsync<'a,'b> = Async.return' (Error v)
+let ok v :ResultAsync<'a,'b> = async.Return (Ok v)
+let error v :ResultAsync<'a,'b> = async.Return (Error v)
 
 let get right wrong x = async {
     match! x with
@@ -24,7 +24,7 @@ let inline mapBoth right wrong = get (right >> Ok) (wrong >> Error)
 let mapBothAsync right wrong = getAsyncPattern right Ok wrong Error
 
 let inline map f x = x |> mapBoth f id
-let inline mapAsync f x = x |> mapBothAsync f Async.return'
+let inline mapAsync f x = x |> mapBothAsync f async.Return
 
 let filter predicate error x = async {
     match! x with
@@ -42,10 +42,10 @@ let filterAsync predicate error x = async {
 }
 
 let inline defaultValue dv = get id (constant dv)
-let inline defaultValueAsync dv = getAsync Async.return' dv
+let inline defaultValueAsync dv = getAsync async.Return dv
 
 let inline defaultWith f = get id f
-let inline defaultWithAsync f = getAsync Async.return' f
+let inline defaultWithAsync f = getAsync async.Return f
 
 let getOk x = async {
     match! x with
@@ -65,13 +65,13 @@ let inline bind f x = x |> bindBoth f Error
 let inline bindAsync f x = x |> bindBothAsync f error
 
 let inline getOrFail messenger = get id (failwith << messenger)
-let inline getOrFailAsync messenger = getAsyncPattern Async.return' id messenger failwith
+let inline getOrFailAsync messenger = getAsyncPattern async.Return id messenger failwith
 
 let inline getOrRaise (raiser: 'b -> exn) = get id (raise << raiser)
-let inline getOrRaiseAsync (raiser: 'b -> Async<exn>) = getAsyncPattern Async.return' id raiser raise
+let inline getOrRaiseAsync (raiser: 'b -> Async<exn>) = getAsyncPattern async.Return id raiser raise
 
 let inline iter ([<InlineIfLambda>] right: 'a -> unit) = get right (constant ())
-let inline iterAsync ([<InlineIfLambda>] right: 'a -> Async<unit>) = getAsync right (constant <| Async.return' ())
+let inline iterAsync ([<InlineIfLambda>] right: 'a -> Async<unit>) = getAsync right (constant <| async.Return ())
 
 let inline orElse elseValue = get Ok (constant elseValue)
 let inline orElseAsync elseFunc = getAsync ok elseFunc

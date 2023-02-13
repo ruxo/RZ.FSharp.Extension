@@ -141,37 +141,37 @@ let filterAsync predicate error x =
     | Ok v -> async { let! r = predicate v
                       in if r then return Ok v
                                else let! ev = error v in return Error ev }
-    | Error _ -> Async.return' x
+    | Error _ -> async.Return x
 
 let inline defaultValueAsync def = function
-    | Ok v -> Async.return' v
+    | Ok v -> async.Return v
     | Error _ -> def
 
 let inline defaultWithAsync ([<InlineIfLambda>] def) = function
-    | Ok v -> Async.return' v
+    | Ok v -> async.Return v
     | Error e -> def e
 
 let getOrFailAsync (messenger :'b -> Async<string>) = function
-    | Ok v -> Async.return' v
+    | Ok v -> async.Return v
     | Error e -> async { let! r = messenger e in return failwith r }
 
 let getOrRaiseAsync (raiser :'b -> Async<exn>) = function
-    | Ok v -> Async.return' v
+    | Ok v -> async.Return v
     | Error e -> async { let! r = raiser e in return raise r }
 
 let inline iterAsync ([<InlineIfLambda>] right) x =
     match x with
     | Ok v -> right v
-    | Error _ -> Async.return' ()
+    | Error _ -> async.Return ()
 
 let inline orElseAsync if_error x =
     match x with
-    | Ok _ -> Async.return' x
+    | Ok _ -> async.Return x
     | Error _ -> if_error
 
 let inline orElseWithAsync ([<InlineIfLambda>] if_error) x =
     match x with
-    | Ok _ -> Async.return' x
+    | Ok _ -> async.Return x
     | Error e -> if_error e
 
 open System.Threading.Tasks

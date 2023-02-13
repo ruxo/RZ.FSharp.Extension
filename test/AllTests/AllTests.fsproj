@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-
-    <IsPackable>false</IsPackable>
+    <OutputType>Library</OutputType>
     <GenerateProgramFile>false</GenerateProgramFile>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\..\Workspace\libs\RZ.FSharp.Extension\src\RZ.FSharp.Extension.fsproj" />
+    <ProjectReference Include="..\..\src\RZ.FSharp.Extension\RZ.FSharp.Extension.fsproj" />
   </ItemGroup>
 
 </Project>

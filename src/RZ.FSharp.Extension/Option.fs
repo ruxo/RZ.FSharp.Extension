@@ -81,44 +81,44 @@ let inline safeCall6 fun' a b c d e f =
 
 let mapAsync (f: 'A -> Async<'B>) = function
 | Some x -> async { let! r = f x in return Some r }
-| None -> Async.return' None
+| None -> async.Return None
 
 let inline bindAsync ([<InlineIfLambda>] f: 'A -> OptionAsync<'B>) = function
 | Some x -> f x
-| None -> Async.return' None
+| None -> async.Return None
 
 let filterAsync (f :'A -> Async<bool>) = function
 | Some x -> async { let! r = f x in return if r then Some x else None }
-| None -> Async.return' None
+| None -> async.Return None
 
 let inline defaultValueAsync (v :Async<'A>) = function
-| Some x -> Async.return' x
+| Some x -> async.Return x
 | None -> v
 
 let inline defaultWithAsync ([<InlineIfLambda>] f :unit -> Async<'A>) = function
-| Some x -> Async.return' x
+| Some x -> async.Return x
 | None -> f()
 
 let getOrFailAsync (messenger :unit -> Async<string>) = function
-| Some x -> Async.return' x
+| Some x -> async.Return x
 | None -> async { let! r = messenger() in return failwith r }
 
 let getOrRaiseAsync (raiser :unit -> Async<exn>) = function
-| Some x -> Async.return' x
+| Some x -> async.Return x
 | None -> async { let! r = raiser() in return raise r }
 
 let inline iterAsync ([<InlineIfLambda>] f :'T -> Async<unit>) = function
 | Some x -> f x
-| None -> Async.return' ()
+| None -> async.Return ()
 
 let inline orElseAsync (if_none :Async<'T option>) x =
     match x with
-    | Some _ -> Async.return' x
+    | Some _ -> async.Return x
     | None -> if_none
 
 let inline orElseWithAsync ([<InlineIfLambda>] f :unit -> Async<'T option>) x =
     match x with
-    | Some _ -> Async.return' x
+    | Some _ -> async.Return x
     | None -> f()
 
 open System.Threading.Tasks

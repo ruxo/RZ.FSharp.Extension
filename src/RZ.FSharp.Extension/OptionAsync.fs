@@ -2,7 +2,7 @@
 
 open Prelude
 
-let none() = Async.return' None
+let none() = async.Return None
 
 let map (f: 'A -> 'B) (x: OptionAsync<'A>) :OptionAsync<'B> = async {
     let! result = x

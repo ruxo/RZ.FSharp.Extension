@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\RZ.FSharp.Extension.fsproj" />
+    <ProjectReference Include="..\..\src\RZ.FSharp.Extension\RZ.FSharp.Extension.fsproj" />
   </ItemGroup>
 
 </Project>
