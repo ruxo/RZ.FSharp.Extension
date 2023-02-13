@@ -1,6 +1,8 @@
 ﻿module IOWithEnv.Console
 
 open System
+open System.Runtime.CompilerServices
+open RZ.FSharp.Extension.IO
 
 type ConsoleIO =
     abstract member ReadLine: unit -> string
@@ -10,7 +12,7 @@ type ConsoleIO =
 type HasConsole =
     abstract member Console: ConsoleIO
         
-[<Struct; NoComparison; NoEquality>]
+[<IsReadOnly; Struct; NoComparison; NoEquality>]
 type RealConsoleIO =
     static member Default = Unchecked.defaultof<RealConsoleIO>
     
@@ -19,6 +21,6 @@ type RealConsoleIO =
         member _.Write s    = Console.Write s
         member _.WriteLine s= Console.WriteLine s
         
-let inline read_line()  = fun (rt: #HasConsole) -> Ok(rt.Console.ReadLine() )
-let inline write s      = fun (rt: #HasConsole) -> Ok(rt.Console.Write s    )
-let inline write_line s = fun (rt: #HasConsole) -> Ok(rt.Console.WriteLine s)
+let inline read_line()  = fun (rt: #HasConsole) -> asok(rt.Console.ReadLine() )
+let inline write s      = fun (rt: #HasConsole) -> asok(rt.Console.Write s    )
+let inline write_line s = fun (rt: #HasConsole) -> asok(rt.Console.WriteLine s)

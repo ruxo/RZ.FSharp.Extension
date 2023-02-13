@@ -1,6 +1,7 @@
 ﻿module IOWithEnv.Random
 
 open System
+open RZ.FSharp.Extension.IO
 
 type RandomEff =
     abstract member Next: int -> int
@@ -17,4 +18,4 @@ type RealRandom() =
     interface RandomEff with
         member _.Next max = r.Next max
         
-let inline random_next max = fun (rt: #HasRandom) -> Ok(rt.RandomEff.Next max)
+let inline random_next max = fun (rt: #HasRandom) -> asok(rt.RandomEff.Next max)

@@ -1,5 +1,4 @@
 ﻿open System
-open RZ.FSharp.Extension
 open RZ.FSharp.Extension.IO
 
 // ------------------------------------ MOST SIMPLE IO ------------------------------------------------
@@ -15,15 +14,15 @@ let unit_env_sample =
         }
     program
     
-unit_env_sample.run().get()
+unit_env_sample.run().await()
     
 // ---------------------------------------- WITH AN ENVIRONMENT ---------------------------------------
 type MyConsole =
     abstract member ReadLine: unit -> string
     abstract member Write: string -> unit
     
-let read_text<'env when 'env :> MyConsole>() :IO<'env,string> = fun env -> Ok(env.ReadLine())
-let write_text<'env when 'env :> MyConsole> s :IO<'env,unit> = fun env -> Ok(env.Write s)
+let read_text() = fun (env: #MyConsole) -> asok(env.ReadLine())
+let write_text s = fun (env: #MyConsole) -> asok(env.Write s)
     
 let env_sample :IO<MyConsole,unit> =
     let program =
@@ -43,4 +42,4 @@ type TestEnv =
         
     static member Default = Unchecked.defaultof<TestEnv>
 
-env_sample.run(TestEnv.Default).get()
+env_sample.run(TestEnv.Default).await()

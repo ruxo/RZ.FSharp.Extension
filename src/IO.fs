@@ -2,30 +2,51 @@
 
 open System.Runtime.CompilerServices
 
-type IOError<'T> = Result<'T, exn>
+type IOError<'a> = Async<Result<'a, exn>>
 type IO<'env,'T> = 'env -> IOError<'T>
-  
+
+let inline asok (x: 'a) :IOError<'a> = async.Return (Ok x)
+let inline aserr e :IOError<'a> = async.Return (Error e)
+
+[<Extension>]
+type IOErrorExtension =
+  [<Extension>]
+  static member map(my: IOError<'a>, f: 'a -> 'b) :IOError<'b> = async { let! v = my in return v.map(f) }
+    
+  [<Extension>]
+  static member bind(my: IOError<'a>, f: 'a -> IOError<'b>) :IOError<'b> =
+    async {
+      match! my with
+      | Error e -> return Error e
+      | Ok v -> return! f v
+    }
+    
+  [<Extension>]
+  static member inline await(my: IOError<'a>) :'a = (my |> Async.RunSynchronously).get()
+    
 [<RequireQualifiedAccess>]
 module IO =
-  let inline wrap (x: 'a) :IO<'env,'a> = fun _ -> Ok x
+  let inline wrap (x: 'a) :IO<'env,'a> = fun _ -> asok x
   let inline map ([<InlineIfLambda>] f: 'a -> 'b) ([<InlineIfLambda>] x: IO<'env,'a>) = fun env -> x(env).map(f)
   let run (env: 'env, x: IO<'env,'a>) :IOError<'a> =
     try
       x(env)
     with
-    | e -> Error e
+    | e -> aserr e
  
   let inline bind ([<InlineIfLambda>] f: 'a -> IO<'env,'b>) ([<InlineIfLambda>] m: IO<'env,'a>) :IO<'env,'b> =
     fun env -> m(env).bind(fun x -> (f x) env)
     
   let inline retry([<InlineIfLambda>] ma: IO<'env,'a>) :IO<'env,'a> =
-    fun env -> let mutable result = None
-               while result.isNone() do
-                 let r = ma(env)
-                 match r with
-                 | Ok _ -> result <- Some r
-                 | Error _ -> ()
-               result.get()
+    fun env -> async {
+      let mutable result = None
+      while result.isNone() do
+        let! r = ma env
+        match r with
+        | Ok _ -> result <- Some r
+        | Error _ -> ()
+      return result.get()
+    }
  
   type IOBuilder() =
     member inline _.Return(x: 'a) :IO<'err,'a> = wrap x

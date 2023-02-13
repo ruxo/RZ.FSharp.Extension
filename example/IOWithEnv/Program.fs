@@ -13,7 +13,7 @@ let play target =
             do! if guess < target
                 then write_line "Too small"
                 else write_line "Too big"
-            yield Error(exn "Incorrect guess")
+            yield aserr(exn "Incorrect guess")
     }
 
 let program =
@@ -32,4 +32,4 @@ type MyEnv =
     interface HasRandom with
         member _.RandomEff = RealRandom.Default
         
-program.run(MyEnv.Default).get()
+program.run(MyEnv.Default).await()
