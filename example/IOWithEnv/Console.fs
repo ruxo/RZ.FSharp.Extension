@@ -2,7 +2,7 @@
 
 open System
 open System.Runtime.CompilerServices
-open RZ.FSharp.Extension.IO
+open RZ.FSharp.IO
 
 type ConsoleIO =
     abstract member ReadLine: unit -> string

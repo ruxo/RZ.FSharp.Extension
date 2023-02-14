@@ -1,6 +1,8 @@
-﻿module RZ.FSharp.Extension.IO
+﻿[<Microsoft.FSharp.Core.AutoOpen>]
+module RZ.FSharp.IO.Prelude
 
 open System.Runtime.CompilerServices
+open RZ.FSharp.Extension
 
 type IOError<'a> = Async<Result<'a, exn>>
 type IO<'env,'T> = 'env -> IOError<'T>
@@ -22,7 +24,7 @@ type IOErrorExtension =
     }
     
   [<Extension>]
-  static member inline await(my: IOError<'a>) :'a = (my |> Async.RunSynchronously).get()
+  static member inline await(my: IOError<'a>) :'a = (my |> Async.RunSynchronously).unwrap()
     
 [<RequireQualifiedAccess>]
 module IO =
@@ -45,7 +47,7 @@ module IO =
         match r with
         | Ok _ -> result <- Some r
         | Error _ -> ()
-      return result.get()
+      return result.unwrap()
     }
  
   type IOBuilder() =

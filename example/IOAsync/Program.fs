@@ -1,7 +1,7 @@
 ﻿open System
 open System.Runtime.CompilerServices
 open System.Threading.Tasks
-open RZ.FSharp.Extension.IO
+open RZ.FSharp.IO
 
 type RandomAff =
     abstract member Next: int -> Async<int>

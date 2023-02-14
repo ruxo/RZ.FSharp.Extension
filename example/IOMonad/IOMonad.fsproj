@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\RZ.FSharp.Extension\RZ.FSharp.Extension.fsproj" />
+    <ProjectReference Include="..\..\src\RZ.FSharp.IO\RZ.FSharp.IO.fsproj" />
   </ItemGroup>
 
 </Project>

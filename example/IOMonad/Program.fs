@@ -1,5 +1,5 @@
 ﻿open System
-open RZ.FSharp.Extension.IO
+open RZ.FSharp.IO
 
 // ------------------------------------ MOST SIMPLE IO ------------------------------------------------
 let unit_env_sample =

@@ -14,7 +14,7 @@ type OptionExtension =
   [<Extension>] static member inline iter(x: Option<'a>, [<InlineIfLambda>] fsome) = x |> Option.iter fsome
   [<Extension>] static member inline then'(x: Option<'a>, [<InlineIfLambda>] fsome) ([<InlineIfLambda>] fnone) = x |> Option.then' fsome fnone
   [<Extension>] static member inline filter(x: Option<'a>, [<InlineIfLambda>] predicate) = x |> Option.filter predicate
-  [<Extension>] static member        get(x: Option<'a>) =
+  [<Extension>] static member        unwrap(x: Option<'a>) =
                   match x with
                   | Some v -> v
                   | None -> raise <| UnwrapError.from($"Unwrap None value of Option<{typeof<'a>.Name}>")

@@ -1,5 +1,4 @@
-﻿open RZ.FSharp.Extension
-open RZ.FSharp.Extension.IO
+﻿open RZ.FSharp.IO
 open IOWithEnv.Console
 open IOWithEnv.Random
 

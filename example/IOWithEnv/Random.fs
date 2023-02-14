@@ -1,7 +1,7 @@
 ﻿module IOWithEnv.Random
 
 open System
-open RZ.FSharp.Extension.IO
+open RZ.FSharp.IO
 
 type RandomEff =
     abstract member Next: int -> int

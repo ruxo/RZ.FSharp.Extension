@@ -17,7 +17,6 @@
     <Compile Include="Result.fs" />
     <Compile Include="ResultAsync.fs" />
     <Compile Include="ResultExtension.fs" />
-    <Compile Include="IO\IO.fs" />
     <Compile Include="FileInfo.fs" />
     <Compile Include="DriveInfo.fs" />
   </ItemGroup>

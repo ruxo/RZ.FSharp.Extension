@@ -10,7 +10,7 @@ type ResultExtension =
     [<Extension>] static member inline map(x: Result<'a,'err>, f: 'a -> 'b) :Result<'b,'err> = Result.map f x
     [<Extension>] static member inline bind(x: Result<'a,'err>, f: 'a -> Result<'b,'err>) :Result<'b,'err> = Result.bind f x
     
-    [<Extension>] static member inline get(x: Result<'a,'err>) :'a =
+    [<Extension>] static member inline unwrap(x: Result<'a,'err>) :'a =
                     match x with
                     | Ok v -> v
                     | Error e -> raise <| UnwrapError.from($"Unwrap Error value of Result<{typeof<'a>.Name},{typeof<'err>.Name}>", e)

@@ -23,6 +23,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "IOWithEnv", "example\IOWith
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "IOAsync", "example\IOAsync\IOAsync.fsproj", "{D23E6676-3004-4DB0-A8D2-88431CCA200F}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "RZ.FSharp.IO", "src\RZ.FSharp.IO\RZ.FSharp.IO.fsproj", "{292F446C-11FC-478B-9FF9-0123BE1D458B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{D23E6676-3004-4DB0-A8D2-88431CCA200F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D23E6676-3004-4DB0-A8D2-88431CCA200F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D23E6676-3004-4DB0-A8D2-88431CCA200F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{292F446C-11FC-478B-9FF9-0123BE1D458B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{292F446C-11FC-478B-9FF9-0123BE1D458B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{292F446C-11FC-478B-9FF9-0123BE1D458B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{292F446C-11FC-478B-9FF9-0123BE1D458B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
