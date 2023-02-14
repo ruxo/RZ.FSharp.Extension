@@ -31,11 +31,16 @@ let inline call6 a b c d e f = function
 
 // Option extensions
 
-let inline getOrFail ([<InlineIfLambda>] messenger: unit -> string) = function
+let unwrap (x: 'a option) :'a =
+    match x with
+    | Some v -> v
+    | None -> raise <| UnwrapError.from($"Unwrap None value of Option<{typeof<'a>.Name}>")
+
+let inline unwrapOrFail ([<InlineIfLambda>] messenger: unit -> string) = function
 | Some v -> v
 | None -> failwith <| messenger()
 
-let inline getOrRaise ([<InlineIfLambda>] raiser: unit -> exn) = function
+let inline unwrapOrRaise ([<InlineIfLambda>] raiser: unit -> exn) = function
 | Some v -> v
 | None -> raise <| raiser()
 
@@ -99,11 +104,11 @@ let inline defaultWithAsync ([<InlineIfLambda>] f :unit -> Async<'A>) = function
 | Some x -> async.Return x
 | None -> f()
 
-let getOrFailAsync (messenger :unit -> Async<string>) = function
+let unwrapOrFailAsync (messenger :unit -> Async<string>) = function
 | Some x -> async.Return x
 | None -> async { let! r = messenger() in return failwith r }
 
-let getOrRaiseAsync (raiser :unit -> Async<exn>) = function
+let unwrapOrRaiseAsync (raiser :unit -> Async<exn>) = function
 | Some x -> async.Return x
 | None -> async { let! r = raiser() in return raise r }
 
@@ -143,11 +148,11 @@ let inline defaultWithT ([<InlineIfLambda>] f :unit -> Task<'A>) = function
 | Some x -> Task.FromResult x
 | None -> f()
 
-let getOrFailT (messenger :unit -> Task<string>) = function
+let unwrapOrFailT (messenger :unit -> Task<string>) = function
 | Some x -> Task.FromResult x
 | None -> task { let! r = messenger() in return failwith r }
 
-let getOrRaiseT (raiser :unit -> Task<exn>) = function
+let unwrapOrRaiseT (raiser :unit -> Task<exn>) = function
 | Some x -> Task.FromResult x
 | None -> task { let! r = raiser() in return raise r }
 

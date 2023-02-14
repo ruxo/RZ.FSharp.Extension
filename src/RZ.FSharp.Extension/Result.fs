@@ -3,80 +3,95 @@
 open Prelude
 
 // Functor Application
-let inline ap other = function
-| Ok f -> other |> Result.map f
-| Error e -> Error e
+let inline ap (other: Result<'a, 'err>) (f: Result<'a -> 'b, 'err>) :Result<'b, 'err> =
+    match f with
+    | Ok f -> other |> Result.map f
+    | Error e -> Error e
 
-let inline call x = function
-| Error e -> Error e
-| Ok f -> Ok (f x)
+let inline call (x: 'a) (f: Result<'a -> 'b, 'err>) :Result<'b, 'err> =
+    match f with
+    | Error e -> Error e
+    | Ok f -> Ok (f x)
 
-let inline call2 a b = function
-| Error e -> Error e
-| Ok f -> Ok (f a b)
+let inline call2 a b f =
+    match f with
+    | Error e -> Error e
+    | Ok f -> Ok (f a b)
 
-let inline call3 a b c = function
-| Error e -> Error e
-| Ok f -> Ok (f a b c)
+let inline call3 a b c f =
+    match f with
+    | Error e -> Error e
+    | Ok f -> Ok (f a b c)
 
-let inline call4 a b c d = function
-| Error e -> Error e
-| Ok f -> Ok (f a b c d)
+let inline call4 a b c d f =
+    match f with
+    | Error e -> Error e
+    | Ok f -> Ok (f a b c d)
 
-let inline call5 a b c d e = function
-| Error e -> Error e
-| Ok f -> Ok (f a b c d e)
+let inline call5 a b c d e f =
+    match f with
+    | Error e -> Error e
+    | Ok f -> Ok (f a b c d e)
 
-let inline call6 a b c d e f = function
-| Error e -> Error e
-| Ok fun' -> Ok (fun' a b c d e f)
+let inline call6 a b c d e f func =
+    match func with
+    | Error e -> Error e
+    | Ok fun' -> Ok (fun' a b c d e f)
 
 // Result extensions
 
-let inline get ([<InlineIfLambda>] right) ([<InlineIfLambda>] wrong) x =
+let inline get ([<InlineIfLambda>] right: 'a -> 'b) ([<InlineIfLambda>] wrong: 'err -> 'b) (x: Result<'a,'err>) =
     match x with
     | Ok y -> right y
     | Error e -> wrong e
 
-let inline getOk x =
+let unwrap (x: Result<'a,'err>) =
     match x with
     | Ok v -> v
-    | Error _ -> failwith "Result is error but tried to get Ok!"
-let inline getError x =
+    | Error e -> raise <| UnwrapError.from($"Unwrap Error value of Result<{typeof<'a>.Name},{typeof<'err>.Name}>", e)
+    
+let unwrapErr (x: Result<'a,'err>) =
     match x with
-    | Ok _ -> failwith "Result is ok but tried to get error!"
+    | Ok v -> raise <| UnwrapError.from($"Unwrap Ok value of Result<{typeof<'a>.Name},{typeof<'err>.Name}>", v)
     | Error e -> e
 
-let inline getOrFail messenger = function
-| Ok v -> v
-| Error e -> failwith <| messenger e
+let inline unwrapOrFail (messenger: 'err -> string) (x: Result<'a, 'err>) :'a =
+    match x with
+    | Ok v -> v
+    | Error e -> failwith <| messenger e
 
-let inline getOrRaise thrower = function
-| Ok v -> v
-| Error e -> raise <| thrower e
+let inline unwrapOrRaise (thrower: 'err -> exn) (x: Result<'a, 'err>) :'a =
+    match x with
+    | Ok v -> v
+    | Error e -> raise <| thrower e
 
 let inline mapBoth ([<InlineIfLambda>] fright) ([<InlineIfLambda>] fwrong) = get (Ok << fright) (Error << fwrong)
 let inline isError x = x |> get (constant false) (constant true)
 let inline isOk x = x |> get (constant true) (constant false)
 
-let inline filter predicate error = function
-| Ok v -> if predicate v then Ok v else Error (error v)
-| Error e -> Error e
+let inline filter (predicate: 'a -> bool) (error: 'a -> 'err) (x: Result<'a,'err>) :Result<'a,'err> =
+    match x with
+    | Ok v -> if predicate v then Ok v else Error (error v)
+    | Error e -> Error e
 
-let inline flatten r = r |> get id Error
-let inline bindBoth ([<InlineIfLambda>] f: 'a -> Result<'c,'d>) ([<InlineIfLambda>] fwrong: 'b -> Result<'c,'d>) = get f fwrong
+let inline flatten (r: Result<Result<'a,'err>,'err>) :Result<'a,'err> = r |> get id Error
+let inline bindBoth ([<InlineIfLambda>] f: 'a -> Result<'c,'err>) ([<InlineIfLambda>] fwrong: 'b -> Result<'c,'err>) =
+    get f fwrong
+    
 let inline defaultValue def = get id (constant def)
 let inline defaultWith ([<InlineIfLambda>] def) = get id def
 
 let inline iter ([<InlineIfLambda>] right) = get right (constant ())
 
-let inline orElse elseValue = function
-| Ok v -> Ok v
-| Error _ -> elseValue
+let inline orElse (elseValue: Result<'a,'err>) (x: Result<'a,'err>) :Result<'a,'err> =
+    match x with
+    | Ok v -> Ok v
+    | Error _ -> elseValue
 
-let inline orElseWith ([<InlineIfLambda>] elseFunc) = function
-| Ok v -> Ok v
-| Error e -> elseFunc e
+let inline orElseWith ([<InlineIfLambda>] elseFunc: 'err -> Result<'a,'err>) (x: Result<'a,'err>) :Result<'a,'err> =
+    match x with
+    | Ok v -> Ok v
+    | Error e -> elseFunc e
 
 let inline safeCall ([<InlineIfLambda>] eHandler) fun' a =
     try
@@ -114,9 +129,11 @@ let inline safeCall6 ([<InlineIfLambda>] eHandler) fun' a b c d e f =
     with
     | e -> Error (eHandler e)
 
-let inline then' ([<InlineIfLambda>] right) ([<InlineIfLambda>] wrong) = function
-| Ok v -> right v
-| Error e -> wrong e
+let inline then' ([<InlineIfLambda>] right: 'a -> unit) ([<InlineIfLambda>] wrong: 'err -> unit)
+                 (x: Result<'a,'err>) =
+    match x with
+    | Ok v -> right v
+    | Error e -> wrong e
 
 // Lifting
 
