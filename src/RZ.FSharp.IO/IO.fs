@@ -54,6 +54,10 @@ module IO =
             return Ok <| fun _ -> ioOk(innerCancel.cancel())
         }
         
+    let timeout(timeoutDelay: TimeSpan, ma: IO<'env,'a>) :IO<'env,'a> = fun (env: #SupportCancel) -> async {
+        return Async.RunSynchronously(ma env, timeoutDelay.TotalMilliseconds |> round |> int)
+    }
+        
     type IOBuilder() =
       member inline _.Return(x: 'a) :IO<'err,'a> = wrap x
       member inline _.ReturnFrom([<InlineIfLambda>] x: IO<'err,'a>) :IO<'err,'a> = x
@@ -115,7 +119,7 @@ type IO =
    
     static member inline retryUntil(schedule: Schedule, ma: IO<'env,'a>, predicate: IOResult<'a> -> bool) :IO<'env,'a> =
         IO.retryWhile(schedule, ma, predicate >> not)
-   
+        
 [<Extension>]
 type IOExtension() =
     [<Extension>] static member inline map ([<InlineIfLambda>] my,[<InlineIfLambda>] f) = my |> IO.map f
