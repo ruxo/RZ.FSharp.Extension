@@ -25,7 +25,7 @@ let play = io {
 
 [<NoComparison; NoEquality>]
 type Live(cancel: Cancel) =
-    static member Default = Live(Cancel.``default``())
+    static member Default = Live(Cancel.``new``())
     
     interface HasConsole with member _.console = RealConsole.Default
     interface SupportCancel with member _.cancel = cancel
