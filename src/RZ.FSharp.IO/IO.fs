@@ -44,17 +44,6 @@ module IO =
    
     let inline bind ([<InlineIfLambda>] f: 'a -> IO<'env,'b>) ([<InlineIfLambda>] m: IO<'env,'a>) :IO<'env,'b> =
         fun env -> m(env).bind(fun x -> (f x) env)
-      
-    let retry(ma: IO<'env,'a>) :IO<'env,'a> =
-        fun env -> async {
-          let mutable result = None
-          while result.IsNone do
-            let! r = ma env
-            match r with
-            | Ok _ -> result <- Some r
-            | Error _ -> ()
-          return result.unwrap()
-        }
     
     let fork(inner: IO<'env,unit>) :IO<'env,IO<'env,unit>>
         when 'env :> HasLocalContext<'env> and 'env :> SupportCancel
@@ -76,6 +65,57 @@ module IO =
  
 let io = IO.IOBuilder()
 
+type IO =
+    static member inline private repeat(Schedule schedule, ma: IO<'env,'a>,
+                                        [<InlineIfLambda>] predicate: IOResult<'a> -> bool) :IO<'env,'a> =
+        fun env -> async {
+            let! r = ma env
+            let mutable result = r
+            use waiter = schedule.GetEnumerator()
+            while predicate result && waiter.MoveNext() do
+                if waiter.Current <> TimeSpan.Zero then
+                    do! Async.Sleep waiter.Current
+                let! r = ma env
+                result <- r
+            return result
+        }
+        
+    static member repeatWhile(schedule: Schedule, ma: IO<'env,'a>, predicate: IOResult<'a> -> bool) :IO<'env,'a> =
+        IO.repeat(schedule, ma, fun r -> r.isOk() && predicate r)
+        
+    static member inline repeat(ma: IO<'env,'a>) :IO<'env,'a> =
+        IO.repeat(Schedule.forever, ma, fun r -> r.isOk())
+        
+    static member inline repeat(schedule: Schedule, ma: IO<'env,'a>) :IO<'env,'a> =
+        IO.repeatWhile(schedule, ma, fun r -> r.isOk())
+
+    static member inline repeatWhile(ma: IO<'env,'a>, predicate: IOResult<'a> -> bool) :IO<'env,'a> =
+        IO.repeatWhile(Schedule.forever, ma, predicate)
+
+    static member inline repeatUntil(ma: IO<'env,'a>, predicate: IOResult<'a> -> bool) :IO<'env,'a> =
+        IO.repeatWhile(Schedule.forever, ma, predicate >> not)
+   
+    static member inline repeatUntil(schedule: Schedule, ma: IO<'env,'a>, predicate: IOResult<'a> -> bool) :IO<'env,'a> =
+        IO.repeatWhile(schedule, ma, predicate >> not)
+      
+    static member retryWhile(schedule: Schedule, ma: IO<'env,'a>, predicate: IOResult<'a> -> bool) :IO<'env,'a> =
+        IO.repeat(schedule, ma, fun r -> r.isError() && predicate r)
+        
+    static member inline retry(ma: IO<'env,'a>) :IO<'env,'a> =
+        IO.retryWhile(Schedule.forever, ma, fun r -> r.isError())
+        
+    static member inline retry(schedule: Schedule, ma: IO<'env,'a>) :IO<'env,'a> =
+        IO.retryWhile(schedule, ma, fun r -> r.isError())
+
+    static member inline retryWhile(ma: IO<'env,'a>, predicate: IOResult<'a> -> bool) :IO<'env,'a> =
+        IO.retryWhile(Schedule.forever, ma, predicate)
+
+    static member inline retryUntil(ma: IO<'env,'a>, predicate: IOResult<'a> -> bool) :IO<'env,'a> =
+        IO.retryWhile(Schedule.forever, ma, predicate >> not)
+   
+    static member inline retryUntil(schedule: Schedule, ma: IO<'env,'a>, predicate: IOResult<'a> -> bool) :IO<'env,'a> =
+        IO.retryWhile(schedule, ma, predicate >> not)
+   
 [<Extension>]
 type IOExtension() =
     [<Extension>] static member inline map ([<InlineIfLambda>] my,[<InlineIfLambda>] f) = my |> IO.map f
