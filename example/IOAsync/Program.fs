@@ -1,61 +1,34 @@
 ﻿open System
-open System.Runtime.CompilerServices
-open System.Threading.Tasks
+open RZ.FSharp.Extension
+open RZ.FSharp.Extension.TimeSpan
 open RZ.FSharp.IO
+open RZ.FSharp.IO.Sys
 
-type RandomAff =
-    abstract member Next: int -> Async<int>
-    
-type HasRandom =
-    abstract member Random: RandomAff
-    
-type LiveRandom private () =
-    let r = Random()
-    
-    static member Default = LiveRandom()
-
-    interface RandomAff with
-        member _.Next delay = async {
-            do! Task.Delay(delay * 500) |> Async.AwaitTask
-            return r.Next 10
-        }
-        
-let inline next_random delay :IO<'env,int> = fun (rt: #HasRandom) -> async {
-    let! v = rt.Random.Next delay in return Ok v
+let digit = io {
+    do! Console.writeLine "*"
+    return 1
 }
-        
-type ConsoleIO =
-    abstract member ReadLine: unit -> string
-    abstract member Write: string -> unit
-    abstract member WriteLine: string -> unit
-    
-type HasConsole =
-    abstract member Console: ConsoleIO
-        
-[<IsReadOnly; Struct; NoComparison; NoEquality>]
-type RealConsoleIO =
-    static member Default = RealConsoleIO()
-    
-    interface ConsoleIO with
-        member _.ReadLine() = Console.ReadLine()
-        member _.Write s    = Console.Write s
-        member _.WriteLine s= Console.WriteLine s
-        
-let inline read_line()  = fun (rt: #HasConsole) -> asok(rt.Console.ReadLine() )
-let inline write s      = fun (rt: #HasConsole) -> asok(rt.Console.Write s    )
-let inline write_line s = fun (rt: #HasConsole) -> asok(rt.Console.WriteLine s)
+
+let sum = digit.fold(Schedule.recurs(10) |||| Schedule.spaced(1*Seconds), 0, fun s x -> s + x)
+
+let inner = io {
+    let! x = sum
+    do! Console.writeLine $"total: %d{x}"
+}
 
 let play = io {
-    do! write "Guess: "
-    let! n = read_line().map(int)
-    let! r = next_random 3
-    do! write_line $"Your {n} vs {r}"
+    let! cancel = IO.fork inner
+    let! _ = Console.readKey
+    do! cancel
+    do! Console.writeLine "done"
 }
 
-[<IsReadOnly; Struct; NoComparison; NoEquality>]
-type Live =
-    static member Default = Live()
-    interface HasRandom with member _.Random = LiveRandom.Default
-    interface HasConsole with member _.Console = RealConsoleIO.Default
+[<NoComparison; NoEquality>]
+type Live(cancel: Cancel) =
+    static member Default = Live(Cancel.``default``())
+    
+    interface HasConsole with member _.console = RealConsole.Default
+    interface SupportCancel with member _.cancel = cancel
+    interface HasLocalContext<Live> with member _.createLocal() = Live(cancel.createLocal())
 
 play.run(Live.Default).await()

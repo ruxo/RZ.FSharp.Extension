@@ -17,6 +17,8 @@
     <Compile Include="Result.fs" />
     <Compile Include="ResultAsync.fs" />
     <Compile Include="ResultExtension.fs" />
+    <Compile Include="TimeSpan.fs" />
+    <Compile Include="Schedule.fs" />
     <Compile Include="FileInfo.fs" />
     <Compile Include="DriveInfo.fs" />
   </ItemGroup>

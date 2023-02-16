@@ -18,4 +18,4 @@ type RealRandom() =
     interface RandomEff with
         member _.Next max = r.Next max
         
-let inline random_next max = fun (rt: #HasRandom) -> asok(rt.RandomEff.Next max)
+let inline random_next max = fun (rt: #HasRandom) -> ioOk(rt.RandomEff.Next max)

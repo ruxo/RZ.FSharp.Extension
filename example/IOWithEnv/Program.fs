@@ -12,7 +12,7 @@ let play target =
             do! if guess < target
                 then write_line "Too small"
                 else write_line "Too big"
-            yield aserr(exn "Incorrect guess")
+            yield ioErr(exn "Incorrect guess")
     }
 
 let program =

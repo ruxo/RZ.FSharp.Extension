@@ -21,13 +21,13 @@ type MyConsole =
     abstract member ReadLine: unit -> string
     abstract member Write: string -> unit
     
-let read_text() = fun (env: #MyConsole) -> asok(env.ReadLine())
-let write_text s = fun (env: #MyConsole) -> asok(env.Write s)
+let read_text() = fun (env: #MyConsole) -> ioOk(env.ReadLine())
+let write_text s = fun (env: #MyConsole) -> ioOk(env.Write s)
     
 let env_sample :IO<MyConsole,unit> =
     let program =
         io {
-            do! write_text "Running with Environment"
+            do! write_text "Running with Environment\n"
             do! write_text("What's your name? ")
             let! name = read_text()
             do! write_text($"Hello, {name}!\n")
@@ -37,7 +37,10 @@ let env_sample :IO<MyConsole,unit> =
 [<Struct; NoComparison; NoEquality>]
 type TestEnv =
     interface MyConsole with
-        member _.ReadLine() = "Rux"
+        member _.ReadLine() =
+            let s = "Rux (injected name)"
+            printfn $"%s{s}"
+            s
         member _.Write s = printf $"Write: %s{s}"
         
     static member Default = Unchecked.defaultof<TestEnv>

@@ -4,8 +4,6 @@ open System.Runtime.CompilerServices
 
 [<Extension>]
 type OptionExtension =
-  [<Extension>] static member inline isSome  x = Option.isSome x
-  [<Extension>] static member inline isNone  x = Option.isNone x
   [<Extension>] static member inline unwrap  x = Option.unwrap x
   [<Extension>] static member inline flatten x = Option.flatten x
   

@@ -21,6 +21,6 @@ type RealConsoleIO =
         member _.Write s    = Console.Write s
         member _.WriteLine s= Console.WriteLine s
         
-let inline read_line()  = fun (rt: #HasConsole) -> asok(rt.Console.ReadLine() )
-let inline write s      = fun (rt: #HasConsole) -> asok(rt.Console.Write s    )
-let inline write_line s = fun (rt: #HasConsole) -> asok(rt.Console.WriteLine s)
+let inline read_line()  = fun (rt: #HasConsole) -> ioOk(rt.Console.ReadLine() )
+let inline write s      = fun (rt: #HasConsole) -> ioOk(rt.Console.Write s    )
+let inline write_line s = fun (rt: #HasConsole) -> ioOk(rt.Console.WriteLine s)

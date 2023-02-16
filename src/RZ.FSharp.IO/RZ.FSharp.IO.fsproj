@@ -10,7 +10,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="Cancel.fs" />
     <Compile Include="IO.fs" />
+    <Compile Include="Sys\Random.fs" />
+    <Compile Include="Sys\Console.fs" />
   </ItemGroup>
 
 </Project>
