@@ -94,6 +94,12 @@ module IO =
               finally
                   err()
           }
+          
+      member inline _.Using(target: 'a, [<InlineIfLambda>] f: 'a -> IO<'env,'b>) :IO<'env,'b> when 'a :> IDisposable =
+          fun env -> async {
+              use target = target
+              return! (f target) env
+          }
  
 let io = IO.IOBuilder()
 
