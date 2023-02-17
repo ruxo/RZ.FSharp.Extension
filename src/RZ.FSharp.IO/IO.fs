@@ -75,6 +75,25 @@ module IO =
       member inline _.Zero() :IO<'err,unit> = wrap ()
       
       member inline _.Delay([<InlineIfLambda>] w: unit -> IO<'err,'a>) :IO<'err,'a> = fun env -> w() env
+      
+      member inline _.TryWith([<InlineIfLambda>] body: IO<'env,'a>, [<InlineIfLambda>] ``with``: exn -> IO<'env,'a>) :IO<'env,'a> =
+          fun env -> async {
+              try
+                  return! body env
+              with
+              | e -> return! (``with`` e) env
+          }
+          
+      member inline _.TryFinally([<InlineIfLambda>] body: IO<'env,'a>, [<InlineIfLambda>] err: unit -> unit) :IO<'env,'a> =
+          fun env -> async {
+              try
+                  try
+                      return! body env
+                  with
+                  | e -> return Error e
+              finally
+                  err()
+          }
  
 let io = IO.IOBuilder()
 
