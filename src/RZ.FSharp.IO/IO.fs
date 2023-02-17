@@ -57,6 +57,15 @@ module IO =
     let timeout(timeoutDelay: TimeSpan, ma: IO<'env,'a>) :IO<'env,'a> = fun (env: #SupportCancel) -> async {
         return Async.RunSynchronously(ma env, timeoutDelay.TotalMilliseconds |> round |> int)
     }
+    
+    let ``for``(range: 'i seq, ma: 'i -> IO<'env,unit>) :IO<'env,unit> = fun env -> async {
+        use itor = range.GetEnumerator()
+        let mutable loop = true
+        while loop && itor.MoveNext() do
+            let! result = (ma itor.Current) env
+            loop <- result.isOk()
+        return Ok ()
+    }
         
     type IOBuilder() =
       member inline _.Return(x: 'a) :IO<'err,'a> = wrap x
