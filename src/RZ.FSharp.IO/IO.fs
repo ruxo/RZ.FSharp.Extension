@@ -100,6 +100,13 @@ module IO =
               use target = target
               return! (f target) env
           }
+          
+      member inline _.Combine(previous: IO<'env,unit>, delayed: IO<'env,'a>) :IO<'env,'a> =
+          fun env -> async {
+              match! previous env with
+              | Ok () -> return! delayed env
+              | Error e -> return Error e
+          }
  
 let io = IO.IOBuilder()
 
