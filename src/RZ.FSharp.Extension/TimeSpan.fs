@@ -9,6 +9,7 @@ type IntoFloat = IntoFloat with
     static member inline ($) (IntoFloat, x: float) = x
     static member inline ($) (IntoFloat, x: int) = float x
     
+[<IsReadOnly; Struct; NoComparison>]
 type TimeSpanUnit =
 | Days
 | Hours

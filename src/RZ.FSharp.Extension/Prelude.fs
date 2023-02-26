@@ -15,6 +15,7 @@ let inline createComparer<'T> comparer hash_func =
         member _.GetHashCode x = hash_func x }
 
 type OptionAsync<'T> = Async<'T option>
+type VOptionAsync<'T> = Async<'T voption>
 type ResultAsync<'T,'E> = Async<Result<'T,'E>>
 
 /// Invalid state caused by incorrectly unlifting a monad
