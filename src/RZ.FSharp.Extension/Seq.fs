@@ -60,7 +60,6 @@ type SeqExtension =
     [<Extension>] static member inline pairwise      x = Seq.pairwise x
     [<Extension>] static member inline readonly      x = Seq.readonly x
     [<Extension>] static member inline rev           x = Seq.rev x
-    [<Extension>] static member inline singleton     x = Seq.singleton x
     [<Extension>] static member inline sort          x = Seq.sort x
     [<Extension>] static member inline sum           x = Seq.sum x
     [<Extension>] static member inline tail          x = Seq.tail x
@@ -72,8 +71,6 @@ type SeqExtension =
     [<Extension>] static member inline tryLast       x = Seq.tryLast x
     [<Extension>] static member inline tryMin        x = tryMin x
     [<Extension>] static member inline tryMax        x = tryMax x
-    
-    [<Extension>] static member inline delay ([<InlineIfLambda>] x) = Seq.delay x
     
     [<Extension>] static member inline tryFold         (x, [<InlineIfLambda>] f) = tryFold f x
     [<Extension>] static member inline allPairs        (x,                    y) = Seq.allPairs y x
@@ -130,7 +127,7 @@ type SeqExtension =
     [<Extension>] static member inline except      (x, y,                    c) = except3 c y x
     [<Extension>] static member inline exists      (x, y, [<InlineIfLambda>] f) = Seq.exists2 f y x
     [<Extension>] static member inline fold        (x, i, [<InlineIfLambda>] f) = Seq.fold f i x
-    [<Extension>] static member inline foldBack    (x, i, [<InlineIfLambda>] f) = Seq.foldBack f i x
+    [<Extension>] static member inline foldBack    (x, i, [<InlineIfLambda>] f) = Seq.foldBack f x i
     [<Extension>] static member inline forall      (x, y, [<InlineIfLambda>] f) = Seq.forall2 f y x
     [<Extension>] static member inline insertAt    (x, i,                    v) = Seq.insertAt i v x
     [<Extension>] static member inline insertManyAt(x, i,                    v) = Seq.insertManyAt i v x
@@ -138,16 +135,16 @@ type SeqExtension =
     [<Extension>] static member inline iteri       (x, y, [<InlineIfLambda>] f) = Seq.iteri2 f y x
     [<Extension>] static member inline map         (x, y, [<InlineIfLambda>] f) = Seq.map2 f y x
     [<Extension>] static member inline mapFold     (x, i, [<InlineIfLambda>] f) = Seq.mapFold f i x
-    [<Extension>] static member inline mapFoldBack (x, i, [<InlineIfLambda>] f) = Seq.mapFoldBack f i x
+    [<Extension>] static member inline mapFoldBack (x, i, [<InlineIfLambda>] f) = Seq.mapFoldBack f x i
     [<Extension>] static member inline mapi        (x, y, [<InlineIfLambda>] f) = Seq.mapi2 f y x
     [<Extension>] static member inline removeManyAt(x, i,                    v) = Seq.removeManyAt i v x
     [<Extension>] static member inline scan        (x, i, [<InlineIfLambda>] f) = Seq.scan f i x
-    [<Extension>] static member inline scanBack    (x, i, [<InlineIfLambda>] f) = Seq.scanBack f i x
+    [<Extension>] static member inline scanBack    (x, i, [<InlineIfLambda>] f) = Seq.scanBack f x i
     [<Extension>] static member inline updateAt    (x, i,                    v) = Seq.updateAt i v x
     [<Extension>] static member inline zip         (x, y,                    z) = Seq.zip3 z y x
     
     [<Extension>] static member inline fold        (x, i, [<InlineIfLambda>] f) = Iterator.fold f i x
     
     [<Extension>] static member inline fold    (x, y, i, [<InlineIfLambda>] f) = Seq.fold2 f i y x
-    [<Extension>] static member inline foldBack(x, y, i, [<InlineIfLambda>] f) = Seq.foldBack2 f i y x
+    [<Extension>] static member inline foldBack(x, y, i, [<InlineIfLambda>] f) = Seq.foldBack2 f y x i
     [<Extension>] static member inline map     (x, y, z, [<InlineIfLambda>] f) = Seq.map3 f z y x
