@@ -170,6 +170,11 @@ let inline orElseWithT ([<InlineIfLambda>] f :unit -> Task<'T voption>) x =
     | ValueSome _ -> Task.FromResult x
     | ValueNone -> f()
     
+let inline toOption(x: ValueOption<'a>) :Option<'a> =
+    match x with
+    | ValueSome v -> Some v
+    | ValueNone -> None
+    
 type OptionBuilder() =
     member _.Bind (x, f) =
         match x with

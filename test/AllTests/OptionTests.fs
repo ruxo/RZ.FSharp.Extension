@@ -1,6 +1,7 @@
 module Tests
 
 open Xunit
+open RZ.FSharp.Extension
 open RZ.FSharp.Extension.Option
 
 [<Fact>]
@@ -34,3 +35,9 @@ let ``Return some value directly`` () =
         return! v
     }
     Assert.Equal(v, r)
+    
+[<Fact>]
+let ``ValueOption is assigned as Option`` () =
+    let v = ValueSome 123
+    let z: int option = v.toOption()
+    Assert.Equal(z.Value, v.Value)

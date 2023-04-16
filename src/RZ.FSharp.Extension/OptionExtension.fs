@@ -6,6 +6,7 @@ open System.Runtime.CompilerServices
 type OptionExtension =
   [<Extension>] static member inline unwrap  x = Option.unwrap x
   [<Extension>] static member inline flatten x = Option.flatten x
+  [<Extension>] static member inline toValueOption x = Option.toValueOption x
   
   [<Extension>] static member inline unwrapOrFail (x,                   v) = x |> Option.unwrapOrFail v
   [<Extension>] static member inline unwrapOrRaise(x,                   v) = x |> Option.unwrapOrRaise v

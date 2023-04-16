@@ -4,8 +4,9 @@ open System.Runtime.CompilerServices
 
 [<Extension>]
 type ValueOptionExtension =
-  [<Extension>] static member inline unwrap  x = ValueOption.unwrap x
-  [<Extension>] static member inline flatten x = ValueOption.flatten x
+  [<Extension>] static member inline unwrap   x = ValueOption.unwrap x
+  [<Extension>] static member inline flatten  x = ValueOption.flatten x
+  [<Extension>] static member inline toOption x = ValueOption.toOption x
   
   [<Extension>] static member inline unwrapOrFail (x,                   v) = x |> ValueOption.unwrapOrFail v
   [<Extension>] static member inline unwrapOrRaise(x,                   v) = x |> ValueOption.unwrapOrRaise v
@@ -19,7 +20,7 @@ type ValueOptionExtension =
   [<Extension>] static member inline ap           (x,                   f) = ValueOption.ap f x
   [<Extension>] static member inline get          (x,[<InlineIfLambda>] f) = ValueOption.get (ValueOption.map f x)
   [<Extension>] static member inline filter       (x,[<InlineIfLambda>] p) = ValueOption.filter p x
-
+  
   [<Extension>] static member inline then'(x,[<InlineIfLambda>] some,[<InlineIfLambda>] none) = x |> ValueOption.then' some none
       
   [<Extension>] static member inline call(f,x) = f |> ValueOption.call x
