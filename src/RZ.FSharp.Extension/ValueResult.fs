@@ -1,81 +1,97 @@
-﻿module RZ.FSharp.Extension.Result
+﻿module RZ.FSharp.Extension.ValueResult
 
+open System.Runtime.CompilerServices
 open Prelude
 
-// Functor Application
-let inline ap (other: Result<'a, 'err>) (f: Result<'a -> 'b, 'err>) :Result<'b, 'err> =
-    match f with
-    | Ok f -> other |> Result.map f
-    | Error e -> Error e
+[<Struct>]
+type ValueResult<'A,'E> =
+| ValueOk of ok:'A
+| ValueError of error:'E
 
-let inline call (x: 'a) (f: Result<'a -> 'b, 'err>) :Result<'b, 'err> =
-    match f with
-    | Error e -> Error e
-    | Ok f -> Ok (f x)
+type VResultAsync<'T,'E> = Async<ValueResult<'T,'E>>
 
-let inline call2 a b f =
-    match f with
-    | Error e -> Error e
-    | Ok f -> Ok (f a b)
-
-let inline call3 a b c f =
-    match f with
-    | Error e -> Error e
-    | Ok f -> Ok (f a b c)
-
-let inline call4 a b c d f =
-    match f with
-    | Error e -> Error e
-    | Ok f -> Ok (f a b c d)
-
-let inline call5 a b c d e f =
-    match f with
-    | Error e -> Error e
-    | Ok f -> Ok (f a b c d e)
-
-let inline call6 a b c d e f func =
-    match func with
-    | Error e -> Error e
-    | Ok fun' -> Ok (fun' a b c d e f)
-
-// Result extensions
-
-let inline get ([<InlineIfLambda>] right: 'a -> 'b) ([<InlineIfLambda>] wrong: 'err -> 'b) (x: Result<'a,'err>) =
-    match x with
-    | Ok y -> right y
-    | Error e -> wrong e
-
-let unwrap (x: Result<'a,'err>) =
-    match x with
-    | Ok v -> v
-    | Error e -> raise <| UnwrapError.from($"Unwrap Error value of Result<{typeof<'a>.Name},{typeof<'err>.Name}>", e)
+// ============================================ EXTENSION =============================================
+let inline bind (f: 'A -> ValueResult<'B,'E>) (my: ValueResult<'A,'E>) :ValueResult<'B,'E> =
+    match my with
+    | ValueOk v -> f v
+    | ValueError e -> ValueError e
     
-let unwrapErr (x: Result<'a,'err>) =
-    match x with
-    | Ok v -> raise <| UnwrapError.from($"Unwrap Ok value of Result<{typeof<'a>.Name},{typeof<'err>.Name}>", v)
-    | Error e -> e
+let inline count result =
+    match result with
+    | ValueOk _ -> 1
+    | ValueError _ -> 0
 
-let inline unwrapOrFail (messenger: 'err -> string) (x: Result<'a, 'err>) :'a =
-    match x with
-    | Ok v -> v
-    | Error e -> failwith <| messenger e
+let inline contains value result =
+    match result with
+    | ValueOk v -> v = value
+    | ValueError _ -> false
 
-let inline unwrapOrRaise (thrower: 'err -> exn) (x: Result<'a, 'err>) :'a =
-    match x with
-    | Ok v -> v
-    | Error e -> raise <| thrower e
+let exists predicate result =
+    match result with
+    | ValueOk v -> predicate v
+    | ValueError _ -> false
+    
+let fold f state result =
+    match result with
+    | ValueOk v -> f state v
+    | ValueError _ -> state
+    
+let foldBack f result state =
+    match result with
+    | ValueOk v -> f v state
+    | ValueError _ -> state
 
-let inline mapBoth ([<InlineIfLambda>] fright) ([<InlineIfLambda>] fwrong) = get (Ok << fright) (Error << fwrong)
+let forall predicate result =
+    match result with
+    | ValueOk v -> predicate v
+    | ValueError _ -> true
+
+let inline get ([<InlineIfLambda>] right: 'a -> 'b) ([<InlineIfLambda>] wrong: 'err -> 'b) (x: ValueResult<'a,'err>) =
+    match x with
+    | ValueOk y -> right y
+    | ValueError e -> wrong e
+
+let inline map ([<InlineIfLambda>] f: 'A -> 'B) (my: ValueResult<'A,'E>) :ValueResult<'B,'E> =
+    match my with
+    | ValueOk v -> ValueOk (f v)
+    | ValueError e -> ValueError e
+
+let inline mapError ([<InlineIfLambda>] f: 'E -> 'B) (my: ValueResult<'A,'E>) :ValueResult<'A,'B> =
+    match my with
+    | ValueOk v -> ValueOk v
+    | ValueError e -> ValueError (f e)
+
+let unwrap (x: ValueResult<'a,'err>) =
+    match x with
+    | ValueOk v -> v
+    | ValueError e -> raise <| UnwrapError.from($"Unwrap ValueError value of ValueResult<{typeof<'a>.Name},{typeof<'err>.Name}>", e)
+    
+let unwrapErr (x: ValueResult<'a,'err>) =
+    match x with
+    | ValueOk v -> raise <| UnwrapError.from($"Unwrap ValueOk value of ValueResult<{typeof<'a>.Name},{typeof<'err>.Name}>", v)
+    | ValueError e -> e
+
+let inline unwrapOrFail ([<InlineIfLambda>] messenger: 'err -> string) (x: ValueResult<'a, 'err>) :'a =
+    match x with
+    | ValueOk v -> v
+    | ValueError e -> failwith <| messenger e
+
+let inline unwrapOrRaise ([<InlineIfLambda>] thrower: 'err -> exn) (x: ValueResult<'a, 'err>) :'a =
+    match x with
+    | ValueOk v -> v
+    | ValueError e -> raise <| thrower e
+
+let inline mapBoth ([<InlineIfLambda>] fright) ([<InlineIfLambda>] fwrong) = get (ValueOk << fright) (ValueError << fwrong)
 let inline isError x = x |> get (constant false) (constant true)
 let inline isOk x = x |> get (constant true) (constant false)
 
-let inline filter (predicate: 'a -> bool) (error: 'a -> 'err) (x: Result<'a,'err>) :Result<'a,'err> =
+let filter (predicate: 'a -> bool) (error: 'a -> 'err) (x: ValueResult<'a,'err>) :ValueResult<'a,'err> =
     match x with
-    | Ok v -> if predicate v then Ok v else Error (error v)
-    | Error e -> Error e
+    | ValueOk v -> if predicate v then ValueOk v else ValueError (error v)
+    | ValueError e -> ValueError e
 
-let inline flatten (r: Result<Result<'a,'err>,'err>) :Result<'a,'err> = r |> get id Error
-let inline bindBoth ([<InlineIfLambda>] f: 'a -> Result<'c,'err>) ([<InlineIfLambda>] fwrong: 'b -> Result<'c,'err>) =
+let inline flatten (r: ValueResult<ValueResult<'a,'err>,'err>) :ValueResult<'a,'err> = r |> get id ValueError
+let inline bindBoth ([<InlineIfLambda>] f: 'a -> ValueResult<'c,'err>) ([<InlineIfLambda>] fwrong: 'b -> ValueResult<'c,'err>) =
     get f fwrong
     
 let inline defaultValue def = get id (constant def)
@@ -83,170 +99,223 @@ let inline defaultWith ([<InlineIfLambda>] def) = get id def
 
 let inline iter ([<InlineIfLambda>] right) = get right (constant ())
 
-let inline orElse (elseValue: Result<'a,'err>) (x: Result<'a,'err>) :Result<'a,'err> =
+let inline orElse (elseValue: ValueResult<'a,'err>) (x: ValueResult<'a,'err>) :ValueResult<'a,'err> =
     match x with
-    | Ok v -> Ok v
-    | Error _ -> elseValue
+    | ValueOk v -> ValueOk v
+    | ValueError _ -> elseValue
 
-let inline orElseWith ([<InlineIfLambda>] elseFunc: 'err -> Result<'a,'err>) (x: Result<'a,'err>) :Result<'a,'err> =
+let inline orElseWith ([<InlineIfLambda>] elseFunc: 'err -> ValueResult<'a,'err>) (x: ValueResult<'a,'err>) :ValueResult<'a,'err> =
     match x with
-    | Ok v -> Ok v
-    | Error e -> elseFunc e
+    | ValueOk v -> ValueOk v
+    | ValueError e -> elseFunc e
 
 let inline safeCall ([<InlineIfLambda>] eHandler) fun' a =
     try
-        Ok (fun' a)
+        ValueOk (fun' a)
     with
-    | e -> Error (eHandler e)
+    | e -> ValueError (eHandler e)
 
 let inline safeCall2 ([<InlineIfLambda>] eHandler) fun' a b =
     try
-        Ok (fun' a b)
+        ValueOk (fun' a b)
     with
-    | e -> Error (eHandler e)
+    | e -> ValueError (eHandler e)
 
 let inline safeCall3 ([<InlineIfLambda>] eHandler) fun' a b c =
     try
-        Ok (fun' a b c)
+        ValueOk (fun' a b c)
     with
-    | e -> Error (eHandler e)
+    | e -> ValueError (eHandler e)
 
 let inline safeCall4 ([<InlineIfLambda>] eHandler) fun' a b c d =
     try
-        Ok (fun' a b c d)
+        ValueOk (fun' a b c d)
     with
-    | e -> Error (eHandler e)
+    | e -> ValueError (eHandler e)
 
 let inline safeCall5 ([<InlineIfLambda>] eHandler) fun' a b c d e =
     try
-        Ok (fun' a b c d e)
+        ValueOk (fun' a b c d e)
     with
-    | e -> Error (eHandler e)
+    | e -> ValueError (eHandler e)
 
 let inline safeCall6 ([<InlineIfLambda>] eHandler) fun' a b c d e f =
     try
-        Ok (fun' a b c d e f)
+        ValueOk (fun' a b c d e f)
     with
-    | e -> Error (eHandler e)
+    | e -> ValueError (eHandler e)
 
 let inline then' ([<InlineIfLambda>] right: 'a -> unit) ([<InlineIfLambda>] wrong: 'err -> unit)
-                 (x: Result<'a,'err>) =
+                 (x: ValueResult<'a,'err>) =
     match x with
-    | Ok v -> right v
-    | Error e -> wrong e
+    | ValueOk v -> right v
+    | ValueError e -> wrong e
+    
+let toArray result =
+    match result with
+    | ValueOk v -> Array.singleton v
+    | ValueError _ -> Array.empty
+    
+let toList result =
+    match result with
+    | ValueOk v -> List.singleton v
+    | ValueError _ -> List.empty
+    
+let inline toValueOption result =
+    match result with
+    | ValueOk v -> ValueSome v
+    | ValueError _ -> ValueNone
 
-// Lifting
+// ====================================== FUNCTOR APPLICATION =========================================
+let inline ap (other: ValueResult<'a, 'err>) (f: ValueResult<'a -> 'b, 'err>) :ValueResult<'b, 'err> =
+    match f with
+    | ValueOk f -> map f other
+    | ValueError e -> ValueError e
+
+let inline call (x: 'a) (f: ValueResult<'a -> 'b, 'err>) :ValueResult<'b, 'err> =
+    match f with
+    | ValueError e -> ValueError e
+    | ValueOk f -> ValueOk (f x)
+
+let inline call2 a b f =
+    match f with
+    | ValueError e -> ValueError e
+    | ValueOk f -> ValueOk (f a b)
+
+let inline call3 a b c f =
+    match f with
+    | ValueError e -> ValueError e
+    | ValueOk f -> ValueOk (f a b c)
+
+let inline call4 a b c d f =
+    match f with
+    | ValueError e -> ValueError e
+    | ValueOk f -> ValueOk (f a b c d)
+
+let inline call5 a b c d e f =
+    match f with
+    | ValueError e -> ValueError e
+    | ValueOk f -> ValueOk (f a b c d e)
+
+let inline call6 a b c d e f func =
+    match func with
+    | ValueError e -> ValueError e
+    | ValueOk fun' -> ValueOk (fun' a b c d e f)
+
+// ============================================ LIFTING ===============================================
 
 let inline mapBothAsync ([<InlineIfLambda>] fright: 'a -> Async<'c>) ([<InlineIfLambda>] fwrong: 'b -> Async<'d>) = function
-| Ok x -> async { let! result = fright x in return Ok result }
-| Error y -> async { let! result = fwrong y in return Error result }
+| ValueOk x -> async { let! result = fright x in return ValueOk result }
+| ValueError y -> async { let! result = fwrong y in return ValueError result }
 
 let inline mapAsync ([<InlineIfLambda>] fright: 'a -> Async<'c>) = function
-| Ok x -> async { let! result = fright x in return Ok result }
-| Error (y:'b) -> async { return Error y }
+| ValueOk x -> async { let! result = fright x in return ValueOk result }
+| ValueError (y:'b) -> async { return ValueError y }
 
-let inline bindBothAsync ([<InlineIfLambda>] f: 'a -> ResultAsync<'c,'d>) ([<InlineIfLambda>] fwrong: 'b -> ResultAsync<'c,'d>) = function
-| Ok x -> f x
-| Error y -> fwrong y
+let inline bindBothAsync ([<InlineIfLambda>] f: 'a -> VResultAsync<'c,'d>) ([<InlineIfLambda>] fwrong: 'b -> VResultAsync<'c,'d>) = function
+| ValueOk x -> f x
+| ValueError y -> fwrong y
 
-let inline bindAsync ([<InlineIfLambda>] f: 'a -> ResultAsync<'c,'b>)  = function
-| Ok x -> f x
-| Error y -> async { return Error y }
+let inline bindAsync ([<InlineIfLambda>] f: 'a -> VResultAsync<'c,'b>)  = function
+| ValueOk x -> f x
+| ValueError y -> async { return ValueError y }
 
 let filterAsync predicate error x =
     match x with
-    | Ok v -> async { let! r = predicate v
-                      in if r then return Ok v
-                               else let! ev = error v in return Error ev }
-    | Error _ -> async.Return x
+    | ValueOk v -> async { let! r = predicate v
+                           in if r then return ValueOk v
+                                   else let! ev = error v in return ValueError ev }
+    | ValueError _ -> async.Return x
 
 let inline defaultValueAsync def = function
-    | Ok v -> async.Return v
-    | Error _ -> def
+    | ValueOk v -> async.Return v
+    | ValueError _ -> def
 
 let inline defaultWithAsync ([<InlineIfLambda>] def) = function
-    | Ok v -> async.Return v
-    | Error e -> def e
+    | ValueOk v -> async.Return v
+    | ValueError e -> def e
 
 let getOrFailAsync (messenger :'b -> Async<string>) = function
-    | Ok v -> async.Return v
-    | Error e -> async { let! r = messenger e in return failwith r }
+    | ValueOk v -> async.Return v
+    | ValueError e -> async { let! r = messenger e in return failwith r }
 
 let getOrRaiseAsync (raiser :'b -> Async<exn>) = function
-    | Ok v -> async.Return v
-    | Error e -> async { let! r = raiser e in return raise r }
+    | ValueOk v -> async.Return v
+    | ValueError e -> async { let! r = raiser e in return raise r }
 
 let inline iterAsync ([<InlineIfLambda>] right) x =
     match x with
-    | Ok v -> right v
-    | Error _ -> async.Return ()
+    | ValueOk v -> right v
+    | ValueError _ -> async.Return ()
 
 let inline orElseAsync if_error x =
     match x with
-    | Ok _ -> async.Return x
-    | Error _ -> if_error
+    | ValueOk _ -> async.Return x
+    | ValueError _ -> if_error
 
 let inline orElseWithAsync ([<InlineIfLambda>] if_error) x =
     match x with
-    | Ok _ -> async.Return x
-    | Error e -> if_error e
+    | ValueOk _ -> async.Return x
+    | ValueError e -> if_error e
 
+// ======================================= TASK CONVERSIONS ===========================================
 open System.Threading.Tasks
 
 let inline mapTask ([<InlineIfLambda>] f: 'a -> Task<'c>) ([<InlineIfLambda>] fwrong: 'b -> 'd) = function
-| Ok x -> task { let! result = f x in return Ok result }
-| Error y -> Task.FromResult <| Error (fwrong y)
+| ValueOk x -> task { let! result = f x in return ValueOk result }
+| ValueError y -> Task.FromResult <| ValueError (fwrong y)
 
-let inline bindTask ([<InlineIfLambda>] f: 'a -> Task<Result<'c,'d>>) ([<InlineIfLambda>] fwrong: 'b -> 'd) = function
-| Ok x -> f x
-| Error y -> Task.FromResult <| Error (fwrong y)
+let inline bindTask ([<InlineIfLambda>] f: 'a -> Task<ValueResult<'c,'d>>) ([<InlineIfLambda>] fwrong: 'b -> 'd) = function
+| ValueOk x -> f x
+| ValueError y -> Task.FromResult <| ValueError (fwrong y)
 
 let filterT predicate error x =
     match x with
-    | Ok v -> task { let! r = predicate v
-                      in if r then return Ok v
-                               else let! ev = error v in return Error ev }
-    | Error _ -> Task.FromResult x
+    | ValueOk v -> task { let! r = predicate v
+                          in if r then return ValueOk v
+                                  else let! ev = error v in return ValueError ev }
+    | ValueError _ -> Task.FromResult x
 
 let inline defaultValueT def = function
-    | Ok v -> Task.FromResult v
-    | Error _ -> def
+    | ValueOk v -> Task.FromResult v
+    | ValueError _ -> def
 
 let inline defaultWithT ([<InlineIfLambda>] def) = function
-    | Ok v -> Task.FromResult v
-    | Error e -> def e
+    | ValueOk v -> Task.FromResult v
+    | ValueError e -> def e
 
 let getOrFailT (messenger :'b -> Async<string>) = function
-    | Ok v -> Task.FromResult v
-    | Error e -> task { let! r = messenger e in return failwith r }
+    | ValueOk v -> Task.FromResult v
+    | ValueError e -> task { let! r = messenger e in return failwith r }
 
 let getOrRaiseT (raiser :'b -> Async<exn>) = function
-    | Ok v -> Task.FromResult v
-    | Error e -> task { let! r = raiser e in return raise r }
+    | ValueOk v -> Task.FromResult v
+    | ValueError e -> task { let! r = raiser e in return raise r }
 
 let inline iterT ([<InlineIfLambda>] right) x =
     match x with
-    | Ok v -> right v
-    | Error _ -> Task.FromResult ()
+    | ValueOk v -> right v
+    | ValueError _ -> Task.FromResult ()
 
 let inline orElseT if_error x =
     match x with
-    | Ok _ -> Task.FromResult x
-    | Error _ -> if_error
+    | ValueOk _ -> Task.FromResult x
+    | ValueError _ -> if_error
 
 let inline orElseWithT ([<InlineIfLambda>] if_error) x =
     match x with
-    | Ok _ -> Task.FromResult x
-    | Error e -> if_error e
+    | ValueOk _ -> Task.FromResult x
+    | ValueError e -> if_error e
 
 // build result builder!
-type ResultBuilder() =
-    member inline _.Bind (current: Result<'a, 'error>, [<InlineIfLambda>] statement: 'a -> Result<'b, 'error>) =
+[<IsReadOnly; Struct; NoEquality; NoComparison>]
+type ResultBuilder =
+    member inline _.Bind (current: ValueResult<'a, 'error>, [<InlineIfLambda>] statement: 'a -> ValueResult<'b, 'error>) =
         match current with
-        | Result.Ok value -> statement value
-        | Result.Error error -> Error error
+        | ValueResult.ValueOk value -> statement value
+        | ValueResult.ValueError error -> ValueError error
 
-    member inline _.Return v = Ok v
+    member inline _.Return v = ValueOk v
 
 module Builder =
-    let result = ResultBuilder()
+    let vresult = ResultBuilder()
