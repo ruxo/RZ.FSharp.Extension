@@ -2,72 +2,22 @@
 
 open Prelude
 
+let inline private asyncMap ([<InlineIfLambda>] f) x = async.Bind(x, f >> async.Return)
+
 let none() = async.Return None
 
-let map (f: 'A -> 'B) (x: OptionAsync<'A>) :OptionAsync<'B> = async {
-    let! result = x
-    return result |> Option.map f
-}
-
-let mapAsync f x = async {
-    match! x with
-    | Some v -> let! r = f v in return Some r
-    | None -> return None
-}
-
-let bind (f: 'A -> OptionAsync<'B>) (x: OptionAsync<'A>) :OptionAsync<'B> = async {
-    let! result = x
-    return! result |> Option.bindAsync f
-}
-
-let bindAsync f x = async {
-    match! x with
-    | Some v -> let! r = f v in return r
-    | None -> return None
-}
-
-let filter (predicate: 'A -> bool) (x: OptionAsync<'A>) :OptionAsync<'A> =
-    async {
-        let! result = x
-        return if result |> Option.map predicate |> Option.defaultValue false
-               then result
-               else None
-    }
-
-let filterAsync (predicate: 'A -> Async<bool>) (x: OptionAsync<'A>) :OptionAsync<'A> =
-    async {
-        let! result = x
-        let! pass = result |> Option.mapAsync predicate
-        return if pass |> Option.defaultValue false
-               then result
-               else None
-    }
-
-let defaultValue (v: 'A) (x: OptionAsync<'A>) :Async<'A> =
-    async {
-        let! result = x
-        return result |> Option.defaultValue v
-    }
-
-let defaultValueAsync (def: Async<'A>) (x: OptionAsync<'A>) :Async<'A> =
-    async {
-        match! x with
-        | Some v -> return v
-        | None -> return! def
-    }
-
-let defaultWith (f: unit -> 'A) (x: OptionAsync<'A>) :Async<'A> =
-    async {
-        let! result = x
-        return result |> Option.defaultWith f
-    }
-
-let defaultWithAsync (f: unit -> Async<'A>) (x: OptionAsync<'A>) :Async<'A> =
-    async {
-        match! x with
-        | Some v -> return v
-        | None -> return! f()
-    }
+let inline bind                f x = async.Bind(x, Option.bindAsync f)
+let inline contains            v x = asyncMap (Option.contains v) x
+let inline count                 x = asyncMap Option.count x
+let inline flatten               x = asyncMap Option.flatten x
+let inline filter      predicate x = asyncMap (Option.filter predicate) x
+let inline filterAsync predicate x = async.Bind(x, Option.filterAsync predicate)
+let inline defaultValue        v x = asyncMap (Option.defaultValue v) x
+let        defaultValueAsync   v x = async.Bind(x, Option.map async.Return >> Option.defaultValue v)
+let inline defaultWith         f x = asyncMap (Option.defaultWith f) x
+let        defaultWithAsync    f x = async.Bind(x, Option.map async.Return >> Option.defaultWith f)
+let inline map                 f x = asyncMap (Option.map f) x
+let inline mapAsync            f x = async.Bind(x, Option.mapAsync f)
 
 let get (x: OptionAsync<'A>) :Async<'A> =
     async {
@@ -184,6 +134,14 @@ let safeCall6 fun' a b c d e f = async {
     | _ -> return None
 }
 
+let try' async' = async {
+    try
+        let! result = async'
+        return Some(result)
+    with
+    | _ -> return None
+}
+
 let then' fsome fnone x = async {
     match! x with
     | Some v -> fsome v
@@ -195,3 +153,10 @@ let thenAsync fsome fnone x = async {
     | Some v -> do! fsome v
     | None -> do! fnone()
 }
+
+let inline toArray       x = asyncMap Option.toArray x
+let inline toList        x = asyncMap Option.toList x
+let inline toNullable    x = asyncMap Option.toNullable x
+let inline toObj         x = asyncMap Option.toObj x
+let inline toValueOption x = asyncMap Option.toValueOption x
+let inline unwrap        x = asyncMap Option.unwrap x

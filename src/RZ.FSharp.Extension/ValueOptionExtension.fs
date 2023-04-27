@@ -39,11 +39,11 @@ type ValueOptionExtension =
     [<Extension>] static member inline map          (x, y, z, [<InlineIfLambda>] f) = ValueOption.map3 f z y x
         
     [<Extension>] static member inline call(f,x) = f |> ValueOption.call x
-    [<Extension>] static member inline call2(f,x,y) = f |> ValueOption.call2 x y
-    [<Extension>] static member inline call3(f,x,y,z) = f |> ValueOption.call3 x y z
-    [<Extension>] static member inline call4(f,x,y,z,u) = f |> ValueOption.call4 x y z u
-    [<Extension>] static member inline call5(f,x,y,z,u,v) = f |> ValueOption.call5 x y z u v
-    [<Extension>] static member inline call6(f,x,y,z,u,v,w) = f |> ValueOption.call6 x y z u v w
+    [<Extension>] static member inline call(f,x,y) = f |> ValueOption.call2 x y
+    [<Extension>] static member inline call(f,x,y,z) = f |> ValueOption.call3 x y z
+    [<Extension>] static member inline call(f,x,y,z,u) = f |> ValueOption.call4 x y z u
+    [<Extension>] static member inline call(f,x,y,z,u,v) = f |> ValueOption.call5 x y z u v
+    [<Extension>] static member inline call(f,x,y,z,u,v,w) = f |> ValueOption.call6 x y z u v w
     
     [<Extension>] static member inline mapTask(x: ValueOption<'a>, [<InlineIfLambda>] f) = x |> ValueOption.mapTask f
     [<Extension>] static member inline bindTask(x: ValueOption<'a>, [<InlineIfLambda>] f) = x |> ValueOption.bindTask f

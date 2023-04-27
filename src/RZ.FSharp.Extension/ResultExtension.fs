@@ -43,8 +43,8 @@ type ResultExtension =
     [<Extension>] static member inline filter  (x,[<InlineIfLambda>] p ,[<InlineIfLambda>] err) = x |> Result.filter p err
     
     [<Extension>] static member inline call(f,x) = f |> Result.call x
-    [<Extension>] static member inline call2(f,x,y) = f |> Result.call2 x y
-    [<Extension>] static member inline call3(f,x,y,z) = f |> Result.call3 x y z
-    [<Extension>] static member inline call4(f,x,y,z,u) = f |> Result.call4 x y z u
-    [<Extension>] static member inline call5(f,x,y,z,u,v) = f |> Result.call5 x y z u v
-    [<Extension>] static member inline call6(f,x,y,z,u,v,w) = f |> Result.call6 x y z u v w
+    [<Extension>] static member inline call(f,x,y) = f |> Result.call2 x y
+    [<Extension>] static member inline call(f,x,y,z) = f |> Result.call3 x y z
+    [<Extension>] static member inline call(f,x,y,z,u) = f |> Result.call4 x y z u
+    [<Extension>] static member inline call(f,x,y,z,u,v) = f |> Result.call5 x y z u v
+    [<Extension>] static member inline call(f,x,y,z,u,v,w) = f |> Result.call6 x y z u v w

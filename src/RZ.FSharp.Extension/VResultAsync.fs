@@ -3,6 +3,8 @@
 open Prelude
 open ValueResult
 
+type VResultAsync<'T,'E> = Async<ValueResult<'T,'E>>
+
 let ok v :VResultAsync<'a,'b> = async.Return (ValueOk v)
 let error v :VResultAsync<'a,'b> = async.Return (ValueError v)
 

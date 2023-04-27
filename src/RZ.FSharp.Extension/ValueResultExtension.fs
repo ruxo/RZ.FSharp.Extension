@@ -43,8 +43,8 @@ type ValueResultExtension =
     [<Extension>] static member inline filter  (x,[<InlineIfLambda>] p ,[<InlineIfLambda>] err) = x |> ValueResult.filter p err
     
     [<Extension>] static member inline call(f,x) = f |> ValueResult.call x
-    [<Extension>] static member inline call2(f,x,y) = f |> ValueResult.call2 x y
-    [<Extension>] static member inline call3(f,x,y,z) = f |> ValueResult.call3 x y z
-    [<Extension>] static member inline call4(f,x,y,z,u) = f |> ValueResult.call4 x y z u
-    [<Extension>] static member inline call5(f,x,y,z,u,v) = f |> ValueResult.call5 x y z u v
-    [<Extension>] static member inline call6(f,x,y,z,u,v,w) = f |> ValueResult.call6 x y z u v w
+    [<Extension>] static member inline call(f,x,y) = f |> ValueResult.call2 x y
+    [<Extension>] static member inline call(f,x,y,z) = f |> ValueResult.call3 x y z
+    [<Extension>] static member inline call(f,x,y,z,u) = f |> ValueResult.call4 x y z u
+    [<Extension>] static member inline call(f,x,y,z,u,v) = f |> ValueResult.call5 x y z u v
+    [<Extension>] static member inline call(f,x,y,z,u,v,w) = f |> ValueResult.call6 x y z u v w

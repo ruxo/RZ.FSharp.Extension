@@ -8,8 +8,6 @@ type ValueResult<'A,'E> =
 | ValueOk of ok:'A
 | ValueError of error:'E
 
-type VResultAsync<'T,'E> = Async<ValueResult<'T,'E>>
-
 // ============================================ EXTENSION =============================================
 let inline bind (f: 'A -> ValueResult<'B,'E>) (my: ValueResult<'A,'E>) :ValueResult<'B,'E> =
     match my with
@@ -211,14 +209,6 @@ let inline mapBothAsync ([<InlineIfLambda>] fright: 'a -> Async<'c>) ([<InlineIf
 let inline mapAsync ([<InlineIfLambda>] fright: 'a -> Async<'c>) = function
 | ValueOk x -> async { let! result = fright x in return ValueOk result }
 | ValueError (y:'b) -> async { return ValueError y }
-
-let inline bindBothAsync ([<InlineIfLambda>] f: 'a -> VResultAsync<'c,'d>) ([<InlineIfLambda>] fwrong: 'b -> VResultAsync<'c,'d>) = function
-| ValueOk x -> f x
-| ValueError y -> fwrong y
-
-let inline bindAsync ([<InlineIfLambda>] f: 'a -> VResultAsync<'c,'b>)  = function
-| ValueOk x -> f x
-| ValueError y -> async { return ValueError y }
 
 let filterAsync predicate error x =
     match x with

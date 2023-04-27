@@ -27,7 +27,7 @@ type UnwrapError with
         data |> Option.iter (fun d -> e.Data["value"] <- d)
         UnwrapError e
 
-let inline tryParse ([<InlineIfLambda>] parser :string -> bool * 'a) (s :string) = let ok, v = parser s in if ok then Some v else None
+let inline tryParse ([<InlineIfLambda>] parser :string -> bool * 'a) (s :string) = let ok, v = parser s in if ok then ValueSome v else ValueNone
 
 let parseBool   = tryParse Boolean.TryParse
 let parseInt8   = tryParse SByte.TryParse
